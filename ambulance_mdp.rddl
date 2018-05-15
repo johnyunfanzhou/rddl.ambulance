@@ -1,0 +1,23 @@
+domain ambulance {
+
+    requirements = {
+        reward-deterministic,
+        constrained-state
+        };
+    
+    types {
+        ambulance   : object;
+        person      : object;
+    };
+    
+    pvariables {
+    };
+    
+    cpfs {
+    };
+    
+    reward = - sum_{?p: person} [person-waiting-service(?p) + person-in-ambulance(?p)];
+    
+    state-action-constraints {
+    };
+}
