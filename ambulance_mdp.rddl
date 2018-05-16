@@ -4,7 +4,7 @@ domain ambulance {
 		continuous,
         constrained-state,
 		reward-deterministic,
-        };
+    };
     
     types {
         ambulance   : object;
