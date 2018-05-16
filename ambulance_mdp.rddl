@@ -19,5 +19,5 @@ domain ambulance {
     reward = - sum_{?p: person} [person-waiting-service(?p) + person-in-ambulance(?p)];
     
     state-action-constraints {
-    }
+    };
 }
