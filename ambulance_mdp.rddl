@@ -1,22 +1,44 @@
 domain ambulance {
 
     requirements = {
-        reward-deterministic,
-        constrained-state
+		continuous,
+        constrained-state,
+		reward-deterministic,
         };
     
     types {
         ambulance   : object;
-        person      : object;
+		node		: object;
     };
     
     pvariables {
+		// Definitions
+		HOSPITAL(node)	: { non-fluent, bool, default = false };
+
+		// Probability someone calls at a node
+		CALL-PARAM(node)	: { non-fluent, real, default = 0.0 };
+
+		// Penalty for person in ambulance
+		// Note: a constant 1.0 penalty for person not serviced
+		IN-PENALTY	: { non-fluent, real, default = 0.5 };
+
+		// Person waiting states
+		person-waiting-service(node)	: { state-fluent, bool, default = false };
+		person-in-ambulance(ambulance)	: { state-fluent, bool, default = false };
+
+		// Ambulance states
+		ambulance-free(ambulance)	: { state-fluent, bool, default = true };
+		ambulance-at-node(ambulance, node)	: { state-fluent, bool, default = false };
+
+		// Actions:
+		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
+		ambulance-going-back(ambulance)	: { state-fluent, bool, default = false };
     };
     
     cpfs {
     };
     
-    reward = - sum_{?p: person} [person-waiting-service(?p) + person-in-ambulance(?p)];
+    reward = - sum_{?p: person} [person-waiting-service(?n) + IN-PENALTY * person-in-ambulance(?a)];
     
     state-action-constraints {
     };
