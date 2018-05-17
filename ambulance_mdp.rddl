@@ -49,7 +49,14 @@ domain ambulance {
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
 			then KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
-			else KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ ambulance-serving(?a, ?n) ^ person-waiting-service(?n))
+			else KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ ambulance-serving(?a, ?n) ^ person-waiting-service(?n));
+
+		// An ambulance is free until it receive an order to serve a node
+		// An ambulance becomes free when it drops off the person at the hospital
+		ambulance-free'(?a) = 
+			if (~ambulance-free(?a))
+			then KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n))]
+			else KronDelta (~exist_{?n: node} ambulance-serving(?a, ?n));
     };
     
     reward = - sum_{?p: person} [person-waiting-service(?n) + IN-PENALTY * person-in-ambulance(?a)];
