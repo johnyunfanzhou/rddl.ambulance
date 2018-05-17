@@ -2,12 +2,12 @@ domain ambulance {
 
     requirements = {
 		continuous,
-        constrained-state,
+		constrained-state,
 		reward-deterministic,
     };
     
     types {
-        ambulance   : object;
+		ambulance   : object;
 		node		: object;
     };
     
@@ -32,10 +32,24 @@ domain ambulance {
 
 		// Actions:
 		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
-		ambulance-going-back(ambulance)	: { state-fluent, bool, default = false };
+		ambulance-going-back(ambulance)	: { action-fluent, bool, default = false };
+		ambulance-serving(ambulance, node):	{ action-fluent, bool, default = false };
     };
     
     cpfs {
+		// A person is still waiting for service unless the ambulance serving this call arrives
+		// if no person currently waiting, Bernoulli(CALL-PARAN(?n)) chance of a new call
+		person-waiting-service'(?n) = 
+			if (person-waiting-service(?n) ^ ~exist_{?a: ambulance} [ambulance-serving(?a, ?n) ^ ambulance-at-node(?a, ?n)])
+			then KronDelta(true)
+			else Bernoulli(CALL-PARAM(?n));
+
+		// A person is still in ambulance until the ambulance arrived at the hospital
+		// A person will enter an ambulance until the ambulance arrived at the node it is serving
+		person-in-ambulance'(?a) = 
+			if (person-in-ambulance(?a))
+			then KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
+			else KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ ambulance-serving(?a, ?n) ^ person-waiting-service(?n))
     };
     
     reward = - sum_{?p: person} [person-waiting-service(?n) + IN-PENALTY * person-in-ambulance(?a)];
