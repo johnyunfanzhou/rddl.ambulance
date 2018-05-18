@@ -96,5 +96,8 @@ domain ambulance_mdp {
     
     // An ambulance has to be at exactly one location 
     forall_{?a:ambulance} [(sum{?n:node} ambulance-at-node(?a,?n)) == 1];
+    
+    //Cannot falsely initialize nodes 
+    forall_{?n:node}[CONNECTED(?n,?n) == false];
     };
 }
