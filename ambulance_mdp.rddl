@@ -1,5 +1,4 @@
 domain ambulance_mdp {
-//comment testing gihub - changed by john
 
     requirements = {
 		continuous,
@@ -79,14 +78,12 @@ domain ambulance_mdp {
 			// If the ambulance is moving to node ?n
 			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
 				then KronDelta(true)
-			// Fail handler
-			else if (~exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
+			// Failed action handler
+			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ ~connected(?cur, ?n)])
 				then KronDelta(ambulance-at-node(?a, ?n))
 			// State persists
 			else KronDelta(false);
     };
-
-    // This is a comment to test merging
     
     reward = - sum_{?n: node} person-waiting-service(?n) - IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
     
