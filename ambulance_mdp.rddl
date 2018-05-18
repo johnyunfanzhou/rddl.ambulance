@@ -41,7 +41,7 @@ domain ambulance {
 		// Ambulance states
 		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
 		// ambulance-free(ambulance)	: { state-fluent, bool, default = true }; ***repetitive parameter; an ambulance is free if it is not loaded***
-		ambulance-loaded(ambulance)	: { state-fluent, bool, default = false };
+		// ambulance-loaded(ambulance)	: { state-fluent, bool, default = false }; ***repetitive parameter; same as person-in-ambulance***
 		ambulance-at-node(ambulance, node)	: { state-fluent, bool, default = false };
 
 		// Actions:
@@ -55,8 +55,8 @@ domain ambulance {
     };
     
     cpfs {
-    	// A person is waiting service until an ambulance picks the person up
-    	// If no person is currently waiting, CALL-PARAM chance that a new person will call
+		// A person is waiting service until an ambulance picks the person up
+		// If no person is currently waiting, CALL-PARAM chance that a new person will call
 		person-waiting-service'(?n) = 
 			if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
 			then KronDelta(true)
@@ -71,6 +71,8 @@ domain ambulance {
 
 		// An ambulance is loaded until it drops off the person at the hospital
 		// An ambulance is loaded upton picking up a person
+		ambulance-loaded'(?a) = 
+
     };
     
     reward = - sum_{?n: node} person-waiting-service(?n) + IN-PENALTY * sum{?a: ambulance} person-in-ambulance(?a);
