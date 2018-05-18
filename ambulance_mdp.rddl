@@ -1,4 +1,4 @@
-domain ambulance {
+domain ambulance_mdp {
 
     requirements = {
 		continuous,
@@ -28,7 +28,7 @@ domain ambulance {
 		connected(node, node)	: { non-fluent, bool, default = false };
 
 		// Probability someone calls at a node
-		CALL-PARAM(node)	: { non-fluent, real, default = 0.0 };
+		CALL-PARAM(node)	: { non-fluent, real, default = 0.1 };
 
 		// Penalty parameters
 		// Note: a constant 1.0 penalty for person not serviced
