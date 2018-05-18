@@ -40,8 +40,8 @@ domain ambulance {
 
 		// Ambulance states
 		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
-		// ambulance-free(ambulance)	: { state-fluent, bool, default = true }; ***repetitive parameter; an ambulance is free if it is not loaded***
-		// ambulance-loaded(ambulance)	: { state-fluent, bool, default = false }; ***repetitive parameter; same as person-in-ambulance***
+		// ambulance-free(ambulance)	: { state-fluent, bool, default = true }; ***repetitive pvariable; an ambulance is free if it is not loaded***
+		// ambulance-loaded(ambulance)	: { state-fluent, bool, default = false }; ***repetitive pvariable; same as person-in-ambulance***
 		ambulance-at-node(ambulance, node)	: { state-fluent, bool, default = false };
 
 		// Actions:
@@ -59,23 +59,33 @@ domain ambulance {
 		// If no person is currently waiting, CALL-PARAM chance that a new person will call
 		person-waiting-service'(?n) = 
 			if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
-			then KronDelta(true)
+				then KronDelta(true)
 			else Bernoulli(CALL-PARAM(?n));
 
 		// A person is still in ambulance until the ambulance unloads the person at the hospital
 		// A person will be loaded to an ambulance when the ambulance arrived at the node it is serving
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
-			then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ ambulance-unloading(?a)])
-			else KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ambulance-loading(?a)]);
+				then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ ambulance-unloading(?a)])
+			else KronDelta (exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ambulance-loading(?a)]);
 
-		// An ambulance is loaded until it drops off the person at the hospital
-		// An ambulance is loaded upton picking up a person
-		ambulance-loaded'(?a) = 
-
+		// Ambulance movement
+		// Note: if the ambulance should pause at a node, all actions of the ambulance are false
+		ambulance-at-node'(?a, ?n) = 
+			// If the ambulance is not moving
+			if (ambulance-loading(?a) | ambulance-unloading(?a) | ~exists_{?next: node} ambulance-moving(?a, ?next))
+				then KronDelta(ambulance-at-node(?a, ?n))
+			// If the ambulance is moving to node ?n
+			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
+				then KronDelta(true)
+			// Fail handler
+			else if (~exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
+				then KronDelta(ambulance-at-node(?a, ?n))
+			// State persists
+			else KronDelta(false);
     };
     
-    reward = - sum_{?n: node} person-waiting-service(?n) + IN-PENALTY * sum{?a: ambulance} person-in-ambulance(?a);
+    reward = - sum_{?n: node} person-waiting-service(?n) + IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
     
     state-action-constraints {
     // Ambulance can only unload at the hospital
