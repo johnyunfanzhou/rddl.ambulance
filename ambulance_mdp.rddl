@@ -10,16 +10,25 @@ domain ambulance {
     types {
 		ambulance   : object;
 		node		: object;
+		// x-coor	: object;
+		// y-coor	: object;
     };
     
     pvariables {
 		// Definitions
 		HOSPITAL(node)	: { non-fluent, bool, default = false };
 
+<<<<<<< HEAD
 		// X-Y positions of the nodes
 		// +'ve X is east, +'ve Y is north
 		X-COOR(node)	: { non-fluent, int, default = 0.0 };
 		Y-COOR(node)	: { non-fluent, int, default = 0.0 };
+=======
+		// If the road network is not just rectangular
+		// Connecting the nodes via roads
+		distance(node, node)	: { non-fluent, real, default = 0.0 };
+		connected(node, node)	: { non-fluent, bool, default = false };
+>>>>>>> 1d9ed0623824beaa57a639b014491beb418edb11
 
 		// Probability someone calls at a node
 		CALL-PARAM(node)	: { non-fluent, real, default = 0.0 };
