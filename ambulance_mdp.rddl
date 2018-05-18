@@ -85,12 +85,10 @@ domain ambulance {
 			else KronDelta(false);
     };
     
-    reward = - sum_{?n: node} person-waiting-service(?n) + IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
+    reward = - sum_{?n: node} person-waiting-service(?n) - IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
     
     state-action-constraints {
-    // Ambulance can only unload at the hospital
-    // Ambulance can only load when at a node that a person is currently waiting
-    // Ambulance can only move to connected nodes
-    // A person can only be in an ambulance iff the ambulance is loaded
+    // Maximum one action can be true for each ambulance
+    forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)) <= 1];
     };
 }
