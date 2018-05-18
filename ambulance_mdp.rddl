@@ -90,5 +90,11 @@ domain ambulance_mdp {
     state-action-constraints {
     // Maximum one action can be true for each ambulance
     forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)) <= 1];
+    
+    // An ambulance has to be at exactly one location 
+    forall_{?a:ambulance} [(sum{?n:node} ambulance-at-node(?a,?n)) == 1];
+    
+    //Cannot falsely initialize nodes 
+    forall_{?n:node}[connected(?n,?n) == false];
     };
 }
