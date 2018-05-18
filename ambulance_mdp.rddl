@@ -3,6 +3,7 @@ domain ambulance {
     requirements = {
 		continuous,
 		constrained-state,
+		integer-valued,
 		reward-deterministic
 	};
     
@@ -14,6 +15,11 @@ domain ambulance {
     pvariables {
 		// Definitions
 		HOSPITAL(node)	: { non-fluent, bool, default = false };
+
+		// X-Y positions of the nodes
+		// +'ve X is east, +'ve Y is north
+		X-COOR(node)	: { non-fluent, int, default = 0.0 };
+		Y-COOR(node)	: { non-fluent, int, default = 0.0 };
 
 		// Probability someone calls at a node
 		CALL-PARAM(node)	: { non-fluent, real, default = 0.0 };
@@ -27,18 +33,20 @@ domain ambulance {
 		person-in-ambulance(ambulance)	: { state-fluent, bool, default = false };
 
 		// Ambulance states
+		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
 		ambulance-free(ambulance)	: { state-fluent, bool, default = true };
 		ambulance-at-node(ambulance, node)	: { state-fluent, bool, default = false };
+		ambulance-going-back(ambulance)	: { state-fluent, bool, default = false };
+		ambulance-serving(ambulance, node):	{ state-fluent, bool, default = false };
 
 		// Actions:
-		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
-		ambulance-going-back(ambulance)	: { action-fluent, bool, default = false };
-		ambulance-serving(ambulance, node):	{ action-fluent, bool, default = false };
+		ambulance-going-north(ambulance)	: { action-fluent, bool, default = false };
+		ambulance-going-south(ambulance)	: { action-fluent, bool, default = false };
+		ambulance-going-east(ambulance)	: { action-fluent, bool, default = false };
+		ambulance-going-west(ambulance)	: { action-fluent, bool, default = false };
     };
     
-    cpfs {
-		// A person is still waiting for service unless the ambulance serving this call arrives
-		// if no person currently waiting, Bernoulli(CALL-PARAN(?n)) chance of a new call
+    cpfs {     
 		person-waiting-service'(?n) = 
 			if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-serving(?a, ?n) ^ ambulance-at-node(?a, ?n)])
 			then KronDelta(true)
@@ -59,7 +67,7 @@ domain ambulance {
 			else KronDelta (~exists_{?n: node} ambulance-serving(?a, ?n));
     };
     
-    reward = - sum_{?p: person} [person-waiting-service(?n) + IN-PENALTY * person-in-ambulance(?a)];
+    reward = - sum_{?n: node} person-waiting-service(?n) + IN-PENALTY * sum{?a: ambulance} person-in-ambulance(?a);
     
     state-action-constraints {
     };
