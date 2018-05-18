@@ -84,6 +84,8 @@ domain ambulance_mdp {
 			// State persists
 			else KronDelta(false);
     };
+
+    // This is a comment to test merging
     
     reward = - sum_{?n: node} person-waiting-service(?n) - IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
     
