@@ -3,8 +3,8 @@ domain ambulance {
     requirements = {
 		continuous,
 		constrained-state,
-		reward-deterministic,
-    };
+		reward-deterministic
+	};
     
     types {
 		ambulance   : object;
@@ -40,7 +40,7 @@ domain ambulance {
 		// A person is still waiting for service unless the ambulance serving this call arrives
 		// if no person currently waiting, Bernoulli(CALL-PARAN(?n)) chance of a new call
 		person-waiting-service'(?n) = 
-			if (person-waiting-service(?n) ^ ~exist_{?a: ambulance} [ambulance-serving(?a, ?n) ^ ambulance-at-node(?a, ?n)])
+			if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-serving(?a, ?n) ^ ambulance-at-node(?a, ?n)])
 			then KronDelta(true)
 			else Bernoulli(CALL-PARAM(?n));
 
@@ -48,15 +48,15 @@ domain ambulance {
 		// A person will enter an ambulance until the ambulance arrived at the node it is serving
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
-			then KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
-			else KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ ambulance-serving(?a, ?n) ^ person-waiting-service(?n));
+			then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
+			else KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ ambulance-serving(?a, ?n) ^ person-waiting-service(?n)]);
 
 		// An ambulance is free until it receive an order to serve a node
 		// An ambulance becomes free when it drops off the person at the hospital
 		ambulance-free'(?a) = 
 			if (~ambulance-free(?a))
-			then KronDelta (~exist_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n))]
-			else KronDelta (~exist_{?n: node} ambulance-serving(?a, ?n));
+			then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
+			else KronDelta (~exists_{?n: node} ambulance-serving(?a, ?n));
     };
     
     reward = - sum_{?p: person} [person-waiting-service(?n) + IN-PENALTY * person-in-ambulance(?a)];
