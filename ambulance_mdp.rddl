@@ -4,6 +4,7 @@ domain ambulance_mdp {
 		continuous,
 		constrained-state,
 		integer-valued,
+		concurrent,
 		reward-deterministic
 	};
     
