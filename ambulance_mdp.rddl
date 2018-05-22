@@ -73,13 +73,19 @@ domain ambulance_mdp {
 		// Note: if the ambulance should pause at a node, all actions of the ambulance are false
 		ambulance-at-node'(?a, ?n) = 
 			// If the ambulance is not moving
-			if (ambulance-loading(?a) | ambulance-unloading(?a) | ~exists_{?next: node} ambulance-moving(?a, ?next))
+			if (ambulance-loading(?a) | ambulance-unloading(?a) | ~exists_{?nq: node} ambulance-moving(?a, ?nq))
 				then KronDelta(ambulance-at-node(?a, ?n))
 			// If the ambulance is moving to node ?n
 			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
 				then KronDelta(true)
-			// Failed action handler
+			// Failed to move to node ?n
 			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ ~connected(?cur, ?n)])
+				then KronDelta(ambulance-at-node(?a, ?n))
+			// If the ambulance is moving from node ?n
+			else if (exists_{?next: node} [ambulance-at-node(?a, ?n) ^ ambulance-moving(?a, ?next) ^ connected(?n, ?next)])
+				then KronDelta(false)
+			// failed to move from node ?n
+			else if (exists_{?next: node} [ambulance-at-node(?a, ?n) ^ ambulance-moving(?a, ?next) ^ ~connected(?n, ?next)])
 				then KronDelta(ambulance-at-node(?a, ?n))
 			// State persists
 			else KronDelta(false);
@@ -92,9 +98,9 @@ domain ambulance_mdp {
     forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)) <= 1];
     
     // An ambulance has to be at exactly one location 
-    forall_{?a:ambulance} [(sum{?n:node} ambulance-at-node(?a,?n)) == 1];
+    forall_{?a:ambulance} [(sum_{?n:node} ambulance-at-node(?a,?n)) == 1];
     
-    //Cannot falsely initialize nodes 
+    //A node cannot be connected to itself 
     forall_{?n:node}[connected(?n,?n) == false];
     };
 }
