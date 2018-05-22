@@ -2,11 +2,11 @@ non-fluents nf_ambulance_inst_mdp {
 	domain = ambulance_mdp;
 	objects {
 		ambulance   : {a0, a1};
-		node		: {n0, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23};
+		node		: {n0, n1, n2, n3, n4, n5, n6, n7, n8};
 	};
 	non-fluents {
 		HOSPITAL(n0) = true;
-		connected(n0, n1) = true; ***3x3 grid***
+		connected(n0, n1) = true; //***3x3 grid***
 		connected(n1, n0) = true;
 		connected(n1, n2) = true;
 		connected(n2, n1) = true;
