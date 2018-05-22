@@ -56,15 +56,17 @@ domain ambulance_mdp {
     };
     
     cpfs {
-		// A person is waiting service until an ambulance picks the person up
+		// A person is waiting service until an ambulance picks the per son up
 		// If no person is currently waiting, CALL-PARAM chance that a new person will call
 		person-waiting-service'(?n) = 
-			if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
+			if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
+				then KronDelta(false)
+			else if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
 				then KronDelta(true)
 			else Bernoulli(CALL-PARAM(?n));
 
 		// A person is still in ambulance until the ambulance unloads the person at the hospital
-		// A person will be loaded to an ambulance when the ambulance arrived at the node it is serving
+		// A person will be loaded to an ambulance when the ambulance arrived at the node the person is waiting
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
 				then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ ambulance-unloading(?a)])
@@ -90,7 +92,7 @@ domain ambulance_mdp {
 				then KronDelta(ambulance-at-node(?a, ?n))
 			// State persists
 			else KronDelta(false);
-    };
+	};
     
     reward = - sum_{?n: node} person-waiting-service(?n) - IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
     
