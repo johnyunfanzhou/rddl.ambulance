@@ -40,7 +40,7 @@ domain ambulance_mdp {
 		// Ambulance states
 		// One person per ambulance max. Ambulance return straight to hospital upon servicing a call.
 		// ambulance-free(ambulance)	: { state-fluent, bool, default = true }; ***repetitive pvariable; an ambulance is free if it is not loaded***
-		ambulance-loaded(ambulance)	: { state-fluent, bool, default = false }; //***repetitive pvariable; same as person-in-ambulance***
+		// ambulance-loaded(ambulance)	: { state-fluent, bool, default = false }; //***repetitive pvariable; same as person-in-ambulance***
 		ambulance-at-node(ambulance, node)	: { state-fluent, bool, default = false };
 
 		// Actions:
@@ -57,13 +57,9 @@ domain ambulance_mdp {
 		// A person is waiting service until an ambulance picks the person up
 		// If no person is currently waiting, CALL-PARAM chance that a new person will call
 		person-waiting-service'(?n) = 
-			// if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
-			// 	then KronDelta(false)
-			// else if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
-			// 	then KronDelta(true)
-			if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-at-node(?a, ?n) ^ ~ambulance-loaded(?a)]) 
+			if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
 				then KronDelta(false)
-			else if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-at-node(?a, ?n) ^ ~ambulance-loaded(?a)])//ambulance-loading(?a) ^ 
+			else if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
 				then KronDelta(true)
 			else Bernoulli(CALL-PARAM(?n));
 
@@ -72,13 +68,8 @@ domain ambulance_mdp {
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
 				then KronDelta (~ambulance-unloading(?a))
-			// else KronDelta (exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ambulance-loading(?a)]);
-			else KronDelta(exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ~ambulance-loaded(?a)]);
+			else KronDelta(exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ambulance-loading(?a)]);
 
-		ambulance-loaded'(?a) =
-			if (ambulance-loaded(?a))
-				then KronDelta (~ambulance-unloading(?a))
-			else KronDelta (ambulance-loading(?a));
 		// person-waiting-service'(?n) = 
 		// 	if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-at-node(?a, ?n) ^ ~person-in-ambulance(?a)])
 		// 		then KronDelta(false)
@@ -131,13 +122,11 @@ domain ambulance_mdp {
 
     // An ambulance can only load if:
     //	The ambulance is not loaded
-    // forall_{?a: ambulance} [ambulance-loading(?a) =>  ~person-in-ambulance(?a)];
-    forall_{?a: ambulance} [ambulance-loading(?a) =>  ~ambulance-loaded(?a)];
+    forall_{?a: ambulance} [ambulance-loading(?a) =>  ~person-in-ambulance(?a)];
 
     // An ambulance can only drop off a person if:
     //	The ambulance is at the hospital
     //	The ambulance is loaded
-   	// forall_{?a: ambulance} [ambulance-unloading(?a) => exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ person-in-ambulance(?a)]];
-    forall_{?a: ambulance} [ambulance-unloading(?a) => exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ ambulance-loaded(?a)]];
+    forall_{?a: ambulance} [ambulance-unloading(?a) => exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ person-in-ambulance(?a)]];
     };
 }
