@@ -105,5 +105,8 @@ domain ambulance_mdp {
     
     //A node cannot be connected to itself 
     forall_{?n:node}[connected(?n,?n) == false];
+
+    //An ambulance can take one patient per call
+    forall_{?a:ambulance} [person-in-ambulance(?a) => ~ambulance-loading(?a)];
     };
 }
