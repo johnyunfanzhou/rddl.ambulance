@@ -114,8 +114,8 @@ instance ambulance_inst_mdp {
 	domain = ambulance_mdp;
 	non-fluents =  nf_ambulance_inst_mdp;
 	init-state {
-		ambulance-at-node(a0, n0);
-		ambulance-at-node(a1, n0);
+		ambulance-at-node(a0, n1);
+		ambulance-at-node(a1, n2);
 	};
 	max-nondef-actions = 2;
 	horizon = 40;

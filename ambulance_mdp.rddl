@@ -1,9 +1,7 @@
 domain ambulance_mdp {
 
     requirements = {
-		continuous,
 		constrained-state,
-		integer-valued,
 		concurrent,
 		reward-deterministic
 	};
@@ -29,7 +27,7 @@ domain ambulance_mdp {
 		connected(node, node)	: { non-fluent, bool, default = false };
 
 		// Probability someone calls at a node
-		CALL-PARAM(node)	: { non-fluent, real, default = 0.1 };
+		CALL-PARAM(node)	: { non-fluent, real, default = 0.05 };
 
 		// Penalty parameters
 		// Note: a constant 1.0 penalty for person not serviced
@@ -56,7 +54,7 @@ domain ambulance_mdp {
     };
     
     cpfs {
-		// A person is waiting service until an ambulance picks the per son up
+		// A person is waiting service until an ambulance picks the person up
 		// If no person is currently waiting, CALL-PARAM chance that a new person will call
 		person-waiting-service'(?n) = 
 			if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-loading(?a) ^ ambulance-at-node(?a, ?n)])
@@ -69,14 +67,26 @@ domain ambulance_mdp {
 		// A person will be loaded to an ambulance when the ambulance arrived at the node the person is waiting
 		person-in-ambulance'(?a) = 
 			if (person-in-ambulance(?a))
-				then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ ambulance-unloading(?a)])
+				then KronDelta (~ambulance-unloading(?a))
 			else KronDelta (exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n) ^ ambulance-loading(?a)]);
+
+		// person-waiting-service'(?n) = 
+		// 	if (person-waiting-service(?n) ^ exists_{?a: ambulance} [ambulance-at-node(?a, ?n) ^ ~person-in-ambulance(?a)])
+		// 		then KronDelta(false)
+		// 	else if (person-waiting-service(?n) ^ ~exists_{?a: ambulance} [ambulance-at-node(?a, ?n) ^ ~person-in-ambulance(?a)])
+		// 		then KronDelta(true)
+		// 	else Bernoulli(CALL-PARAM(?n));
+
+		// person-in-ambulance'(?a) = 
+		// 	if (person-in-ambulance(?a))
+		// 		then KronDelta (~exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n)])
+		// 	else KronDelta (exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n)]);
 
 		// Ambulance movement
 		// Note: if the ambulance should pause at a node, all actions of the ambulance are false
 		ambulance-at-node'(?a, ?n) = 
 			// If the ambulance is not moving
-			if (ambulance-loading(?a) | ambulance-unloading(?a) | ~exists_{?nq: node} ambulance-moving(?a, ?nq))
+			if (~exists_{?nq: node} ambulance-moving(?a, ?nq))
 				then KronDelta(ambulance-at-node(?a, ?n))
 			// If the ambulance is moving to node ?n
 			else if (exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ ambulance-moving(?a, ?n) ^ connected(?cur, ?n)])
@@ -94,16 +104,29 @@ domain ambulance_mdp {
 			else KronDelta(false);
 	};
     
-    reward = - sum_{?n: node} person-waiting-service(?n) - IN-PENALTY * sum_{?a: ambulance} person-in-ambulance(?a);
+    reward = - [sum_{?n: node} [person-waiting-service(?n)]] - [IN-PENALTY * (sum_{?a: ambulance} [person-in-ambulance(?a)])];
     
     state-action-constraints {
     // Maximum one action can be true for each ambulance
-    forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)) <= 1];
+    forall_{?a : ambulance} [(sum_{?n: node} [ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)]) <= 1];
+    // forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n)) <= 1];
     
     // An ambulance has to be at exactly one location 
     forall_{?a:ambulance} [(sum_{?n:node} ambulance-at-node(?a,?n)) == 1];
     
-    //A node cannot be connected to itself 
+    // A node cannot be connected to itself 
     forall_{?n:node}[connected(?n,?n) == false];
+
+    // An ambulance can only move to connected nodes
+    forall_{?a: ambulance, ?next: node} [ambulance-moving(?a, ?next) => exists_{?cur: node} [ambulance-at-node(?a, ?cur) ^ connected(?cur, ?next)]];
+
+    // An ambulance can only load if:
+    //	The ambulance is not loaded
+    forall_{?a: ambulance} [ambulance-loading(?a) =>  ~person-in-ambulance(?a)];
+
+    // An ambulance can only drop off a person if:
+    //	The ambulance is at the hospital
+    //	The ambulance is loaded
+   	forall_{?a: ambulance} [ambulance-unloading(?a) => exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ person-in-ambulance(?a)]];
     };
 }
