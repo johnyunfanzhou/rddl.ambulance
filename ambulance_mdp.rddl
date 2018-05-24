@@ -26,7 +26,7 @@ domain ambulance_mdp {
 		connected(node, node)	: { non-fluent, bool, default = false };
 
 		// Probability someone calls at a node
-		CALL-PARAM(node)	: { non-fluent, real, default = 0.005 };
+		CALL-PARAM(node)	: { non-fluent, real, default = 0.01 };
 
 		// Penalty parameters
 		// Note: a constant 1.0 penalty for person not serviced
@@ -121,7 +121,8 @@ domain ambulance_mdp {
 
     // An ambulance can only load if:
     //	The ambulance is not loaded
-    forall_{?a: ambulance} [ambulance-loading(?a) =>  ~person-in-ambulance(?a)];
+    //	There exists some one to be loaded
+    forall_{?a: ambulance} [ambulance-loading(?a) =>  ~person-in-ambulance(?a) ^ exists_{?n: node} [ambulance-at-node(?a, ?n) ^ person-waiting-service(?n)]];
 
     // An ambulance can only drop off a person if:
     //	The ambulance is at the hospital
