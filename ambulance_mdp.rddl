@@ -128,5 +128,9 @@ domain ambulance_mdp {
     //	The ambulance is at the hospital
     //	The ambulance is loaded
     forall_{?a: ambulance} [ambulance-unloading(?a) => exists_{?n: node} [ambulance-at-node(?a, ?n) ^ HOSPITAL(?n) ^ person-in-ambulance(?a)]];
+    
+    //A call can only be picked up by at most one ambulance
+    forall_{?n : node} [(sum_{?a:ambulance} (ambulance-loading(?a) ^ ambulance-at-node(?a,?n))) <= 1];
+
     };
 }
