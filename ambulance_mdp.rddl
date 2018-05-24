@@ -2,7 +2,6 @@ domain ambulance_mdp {
 
     requirements = {
 		constrained-state,
-		concurrent,
 		reward-deterministic
 	};
     
@@ -27,7 +26,7 @@ domain ambulance_mdp {
 		connected(node, node)	: { non-fluent, bool, default = false };
 
 		// Probability someone calls at a node
-		CALL-PARAM(node)	: { non-fluent, real, default = 0.05 };
+		CALL-PARAM(node)	: { non-fluent, real, default = 0.005 };
 
 		// Penalty parameters
 		// Note: a constant 1.0 penalty for person not serviced
@@ -108,7 +107,7 @@ domain ambulance_mdp {
     
     state-action-constraints {
     // Maximum one action can be true for each ambulance
-    forall_{?a : ambulance} [(sum_{?n: node} [ambulance-moving(?a, ?n) + ambulance-loading(?a) + ambulance-unloading(?a)]) <= 1];
+    forall_{?a : ambulance} [((sum_{?n: node} [ambulance-moving(?a, ?n)]) + ambulance-loading(?a) + ambulance-unloading(?a)) <= 1];
     // forall_{?a : ambulance} [(sum_{?n: node} ambulance-moving(?a, ?n)) <= 1];
     
     // An ambulance has to be at exactly one location 

@@ -118,6 +118,6 @@ instance ambulance_inst_mdp {
 		ambulance-at-node(a1, n2);
 	};
 	max-nondef-actions = 2;
-	horizon = 40;
+	horizon = 90;
 	discount = 1.0;
 }
