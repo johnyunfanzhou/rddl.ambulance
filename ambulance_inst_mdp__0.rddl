@@ -31,6 +31,14 @@ non-fluents nf_ambulance_inst_mdp__0 {
 		connected(n7, n8) = true;
 		connected(n8, n7) = true;
 		CALL-PARAM(n0) = 0.0;
+		CALL-PARAM(n0) = 0.0;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
+		CALL-PARAM(n0) = 0.05;
 	};
 }
 
