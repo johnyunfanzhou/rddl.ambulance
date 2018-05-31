@@ -1,4 +1,4 @@
-non-fluents nf_ambulance_inst_mdp {
+non-fluents nf_ambulance_inst_mdp_2 {
 	domain = ambulance_mdp;
 	objects {
 		ambulance   : {a0, a1, a2};
@@ -86,9 +86,9 @@ non-fluents nf_ambulance_inst_mdp {
 	};
 }
 
-instance ambulance_inst_mdp {
+instance ambulance_inst_mdp_2 {
 	domain = ambulance_mdp;
-	non-fluents =  nf_ambulance_inst_mdp;
+	non-fluents =  nf_ambulance_inst_mdp_2;
 	init-state {
 		ambulance-at-node(a0, n0);
 		ambulance-at-node(a1, n0);
